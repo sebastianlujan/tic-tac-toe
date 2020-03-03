@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 class Board
-  attr_accessor :board, :state
+  # state refers to the winning or tied position of a game ,
+  # the default state is false because is not won or tied
+
+  attr_accessor :board, :state, :turns
   def initialize
-    # @board = Array.new(9, ' ')
-    @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
+    @board = Array.new(9, ' ')
+    # @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
+    @state = false
+    @turns = 1
   end
 
   def show_board
@@ -15,21 +20,37 @@ class Board
     puts '——-—+——-—+——-—'
     puts " #{@board[6]}  | #{@board[7]}  | #{@board[8]} "
   end
+
+  def tie?(player)
+    #is tie when all the spaces are fill, and no one is won
+    true
+  end
+
+  def win?(player)
+    #win when the same choice is repeated 3 times in a row , column or diagonal
+    false
+  end
+
+  def game_over?(player)
+    state = tie?(player) || win?(player)
+    state
+  end
 end
-board = Board.new
-p board.show_board
 
 class Player
-  attr_accessor :player
+  # choice = { x , O } the user selection
+  # position = index between 1 to 9
+  attr_accessor :choice, :position
 
   def initialize
-    @player = '❌'
+    @choice = 'x'
+    @position = 1
   end
 
   def show_welcome
     puts 'Welcome To Tic-Tac-Toe! Please select Player: X or O?'
-    user_input = gets.chomp
-    puts "Awesome! #{user_input}"
+    @choice = gets.chomp
+    puts "Awesome! #{@choice}"
     puts 'Rules: Select a number between 1-9 like:'
     puts '1️⃣ 2️⃣ 3️⃣'
     puts '4️⃣ 5️⃣ 6️⃣'
@@ -50,37 +71,50 @@ class Player
     end
   end
 
+  def convert_to_emoji(move)
+    if move == 'X'
+      move = '❌'
+    elsif move == 'O'
+      move = '🔵'
+    end
+    move
+  end
+
+  def play_game(position, move, board)
+    ###fill the board according to the rules
+    ##if valid position show board with the changes.
+    ##if board.turns.odd?
+      # move =  x
+      board[position] = convert_to_emoji(move)
+    ##else
+      # move O
+  end
+
   def solicit
     # this method will request the user to insert the move
     puts 'Please select a valid number between 1-9'
-    user_move = gets.chomp.to_i
-    if validate? user_move
+    @current = gets.chomp.to_i
+    if validate? @current
       puts 'Valid user move. Inserting into board.'
+      play_game(@current)
     else
       puts "Error. #{user_move} is not a valid move.
       Please insert a valid number between 1-9"
     end
   end
-
 end
 
-player = Player.new
-p player.show_welcome
+  board = Board.new
+  player = Player.new
+
+  p player.show_welcome
+
+  while !board.game_over? player.choice
+    p board.show_board
+    p player.solicit
+  end
 
 =begin
-
-def show_welcome
-  puts 'Welcome To Tic-Tac-Toe! Before you Start, Please select Player: X or O?'
-  user_input = gets.chomp
-  puts "Awesome! #{user_input}"
-  puts 'Rules: Select a number between 1-9 like:'
-  puts '1️⃣ 2️⃣ 3️⃣'
-  puts '4️⃣ 5️⃣ 6️⃣'
-  puts '7️⃣ 8️⃣ 9️⃣'
-  puts 'Make sure the space is available, if taken select another #'
-  puts 'You will win if you have your symbol appear on / \ | ----'
-  puts 'Good Luck and Have Fun!'
-end
 
 def solicit_move(user_move)
   # this method will request the user to insert the move
