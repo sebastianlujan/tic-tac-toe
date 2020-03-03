@@ -1,22 +1,43 @@
 # frozen_string_literal: true
+class Board
+  attr_accessor :board, :state
+  def initialize
+    #@board = Array.new(9, ' ')
+    @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
+  end
+
+  def show_board
+    # Displaying board
+    puts
+    puts " #{@board[0]}  | #{@board[1]}  | #{@board[2]} "
+    puts '——-—+——-—+——-—'
+    puts " #{@board[3]}  | #{@board[4]}  | #{@board[5]} "
+    puts '——-—+——-—+——-—'
+    puts " #{@board[6]}  | #{@board[7]}  | #{@board[8]} "
+  end
+end
+board = Board.new
+p board.show_board
+
+=begin
 
 def show_welcome
   puts 'Welcome To Tic-Tac-Toe! Before you Start, Please select Player: X or O?'
-  user_input = get.chomp
+  user_input = gets.chomp
   puts "Awesome! #{user_input}"
   puts 'Rules: Select a number between 1-9 like:'
-  puts '1️⃣2️⃣3️⃣'
-  puts '4️⃣5️⃣6️⃣'
-  puts '7️⃣8️⃣9️⃣'
+  puts '1️⃣ 2️⃣ 3️⃣'
+  puts '4️⃣ 5️⃣ 6️⃣'
+  puts '7️⃣ 8️⃣ 9️⃣'
   puts 'Make sure the space is available, if taken select another #'
   puts 'You will win if you have your symbol appear on / \ | ----'
   puts 'Good Luck and Have Fun!'
 end
 
-def solicit_move
+def solicit_move(user_move)
   # this method will request the user to insert the move
   # it also validates that it is a valid move (follows rules)
-  @user_move = user_move
+  user_moves = user_move
   puts 'Please select a valid number between 1-9'
   puts 'Error. #{user_move} is not a valid move.
     Please insert a valid number between 1-9'
@@ -24,7 +45,7 @@ end
 
 def move
   # this method will get the user's VALID move & store it in the cell
-  user_move = get.chomp
+  user_move = gets.chomp
   # put the move inside the grid position they've chosen.
   # Here we interact tiwh the Board class.
 end
@@ -32,11 +53,6 @@ end
 def clear_board
   # anytime the user inserts a new move the old board will be cleared
   # from the Console
-end
-
-def show_board
-  # board is displayed with the user's input
-  puts 'Here is the new board!'
 end
 
 def game_status(*)
@@ -59,3 +75,4 @@ def game_over(*)
   else continue game
   end
 end
+=end
