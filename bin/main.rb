@@ -84,35 +84,36 @@ class Player
     ###fill the board according to the rules
     ##if valid position show board with the changes.
     ##if board.turns.odd?
-      # move =  x
-      board[position] = convert_to_emoji(move)
+    p board.board[position - 1] = convert_to_emoji(move)
+    board.turns += 1
+    #board[position] = convert_to_emoji(move)
     ##else
-      # move O
+    # move O
   end
 
-  def solicit
+  def solicit(board)
     # this method will request the user to insert the move
     puts 'Please select a valid number between 1-9'
-    @current = gets.chomp.to_i
-    if validate? @current
+    @position = gets.chomp.to_i
+    if validate? @position
       puts 'Valid user move. Inserting into board.'
-      play_game(@current)
+      play_game(@position, @choice, board)
     else
-      puts "Error. #{user_move} is not a valid move.
+      puts "Error. #{@position} is not a valid move.
       Please insert a valid number between 1-9"
     end
   end
 end
 
-  board = Board.new
-  player = Player.new
+board = Board.new
+player = Player.new
 
-  p player.show_welcome
+p player.show_welcome
 
-  while !board.game_over? player.choice
-    p board.show_board
-    p player.solicit
-  end
+while board.turns < 9 || board.game_over? player.choice
+  p board.show_board
+  p player.solicit(board)
+end
 
 =begin
 
