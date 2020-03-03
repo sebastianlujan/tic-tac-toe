@@ -2,7 +2,7 @@
 class Board
   attr_accessor :board, :state
   def initialize
-    #@board = Array.new(9, ' ')
+    # @board = Array.new(9, ' ')
     @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
   end
 
@@ -18,6 +18,54 @@ class Board
 end
 board = Board.new
 p board.show_board
+
+class Player
+  attr_accessor :player
+
+  def initialize
+    @player = '❌'
+  end
+
+  def show_welcome
+    puts 'Welcome To Tic-Tac-Toe! Please select Player: X or O?'
+    user_input = gets.chomp
+    puts "Awesome! #{user_input}"
+    puts 'Rules: Select a number between 1-9 like:'
+    puts '1️⃣ 2️⃣ 3️⃣'
+    puts '4️⃣ 5️⃣ 6️⃣'
+    puts '7️⃣ 8️⃣ 9️⃣'
+    puts 'Make sure the space is available, if taken select another #'
+    puts 'You will win if you have your symbol appear on / \ | ----'
+    puts 'Good Luck and Have Fun!'
+  end
+
+  def validate?(move)
+    # this method validates the input from user
+    # ensures that input is a # form 1-9
+    move = move.to_i
+    if move.between?(1, 9)
+      true
+    else
+      false
+    end
+  end
+
+  def solicit
+    # this method will request the user to insert the move
+    puts 'Please select a valid number between 1-9'
+    user_move = gets.chomp.to_i
+    if validate? user_move
+      puts 'Valid user move. Inserting into board.'
+    else
+      puts "Error. #{user_move} is not a valid move.
+      Please insert a valid number between 1-9"
+    end
+  end
+
+end
+
+player = Player.new
+p player.show_welcome
 
 =begin
 
