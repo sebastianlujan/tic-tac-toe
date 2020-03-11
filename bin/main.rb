@@ -1,26 +1,33 @@
-# frozen_string_literal: true
+#!/usr/bin/env ruby
 class Board
   # state refers to the winning or tied position of a game ,
   # the default state is false because is not won or tied
 
-  attr_accessor :board, :state, :turns
+  attr_accessor :board, :played
   def initialize
-    @board = Array.new(9, ' ')
-    # @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
-    @state = false
-    @turns = 1
+    #@board = Array.new(9, ' ')
+    @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
+    @played = 0
   end
 
-  def show_board
-    # Displaying board
-    puts
-    puts " #{@board[0]}  | #{@board[1]}  | #{@board[2]} "
-    puts '——-—+——-—+——-—'
-    puts " #{@board[3]}  | #{@board[4]}  | #{@board[5]} "
-    puts '——-—+——-—+——-—'
-    puts " #{@board[6]}  | #{@board[7]}  | #{@board[8]} "
+  def clear
+    `clear`
   end
 
+  def show
+    str = "\n"
+    @board.each_with_index do |_, i|
+      str += " #{@board[i]} "
+      str += '|' unless [2, 5, 8].include? i
+      str += "\n——-—+——-—+——-—\n" if [2, 5].include? i
+    end
+    str += "\n\n"
+  end
+end
+
+board = Board.new
+print board.show
+=begin
   def tie?(player)
     #is tie when all the spaces are fill, and no one is won
     true
@@ -47,7 +54,7 @@ class Player
     @position = 1
   end
 
-  def show_welcome
+  def welcome
     puts 'Welcome To Tic-Tac-Toe! Please select Player: X or O?'
     @choice = gets.chomp
     puts "Awesome! #{@choice}"
@@ -71,7 +78,7 @@ class Player
     end
   end
 
-  def convert_to_emoji(move)
+  def to_emoji(move)
     if move == 'X'
       move = '❌'
     elsif move == 'O'
@@ -85,7 +92,7 @@ class Player
     ##if valid position show board with the changes.
     ##if board.turns.odd?
     p board.board[position - 1] = convert_to_emoji(move)
-    board.turns += 1
+    board.turn += 1
     #board[position] = convert_to_emoji(move)
     ##else
     # move O
@@ -105,15 +112,22 @@ class Player
   end
 end
 
-board = Board.new
-player = Player.new
 
-p player.show_welcome
+p player.welcome
 
-while board.turns < 9 || board.game_over? player.choice
-  p board.show_board
-  p player.solicit(board)
+class Game
+  board = Board.new
+  player = Player.new
+  
+  def start
+    loop do
+      p board.show
+      p player.solicit(board)
+      if board.tur
+    end    
+  end
 end
+
 
 =begin
 
