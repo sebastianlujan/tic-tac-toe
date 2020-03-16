@@ -1,175 +1,102 @@
 #!/usr/bin/env ruby
-class Board
-  # state refers to the winning or tied position of a game ,
-  # the default state is false because is not won or tied
 
-  attr_accessor :board, :played
-  def initialize
-    #@board = Array.new(9, ' ')
-    @board = %w[🔵 ❌ 🔵 ❌ ❌ 🔵 ❌ 🔵 🔵]
-    @played = 0
+# we describe a board like an Array of 10 strings
+board = Array.new(9, '  ')
+
+# Amount of moves
+moves = 0
+
+# game version
+version = 1.0
+
+# refactor to board.game_over?
+def game_over?(moves)
+  # is game over if tie? || winner?(human) || winner?(machine)
+  false || moves > 9
+end
+
+def show(board)
+  str = "\n"
+  board.each_with_index do |_, i|
+    str += " #{board[i]} "
+    str += '|' unless [2, 5, 8].include? i
+    str += "\n——-—+——-—+——-—\n" if [2, 5].include? i
   end
+  str += "\n\n"
+  print str
+  p 'Select a number between 1 - 9:'
+end
 
-  def clear
-    `clear`
-  end
+def clear
+  `clear`
+end
 
-  def show
-    str = "\n"
-    @board.each_with_index do |_, i|
-      str += " #{@board[i]} "
-      str += '|' unless [2, 5, 8].include? i
-      str += "\n——-—+——-—+——-—\n" if [2, 5].include? i
-    end
-    str += "\n\n"
+def show_example_position
+  enter = "\n\n"
+  print "\t1️⃣#{' ' * 4}2️⃣#{' ' * 4}3️⃣#{enter}"
+  print "\t4️⃣#{' ' * 4}5️⃣#{' ' * 4}6️⃣#{enter}"
+  print "\t7️⃣#{' ' * 4}8️⃣#{' ' * 4}9️⃣#{enter}"
+end
+
+def show_rules
+  enter = "\n\n"
+  show_example_position
+  p "if it's been chosen, select another position"
+  print "you'll know you've won if your choice appears as: #{enter}"
+  print "\n➡️#{' ' * 4}⬇️#{' ' * 4}↘️#{' ' * 4}↗️ #{enter}"
+  print "three times in a row, e.i : #{enter}\t🔵 | 🔵 | 🔵 #{enter}"
+end
+
+def show_welcome(version)
+  puts "Welcome To Tic-Tac-Toe! v#{version} m2"
+end
+
+def select_player
+  machine = :x
+  puts 'Player, please choose: X or O'
+  human = gets.chomp.downcase.to_sym
+  machine = :o if human == :x
+  [human, machine]
+end
+
+def select_rules(human)
+  print "Awesome! #{human}\n Do you know the rules? [Y / N]: "
+  choice = gets.chomp.downcase.to_sym
+  show_rules if choice == :n
+  p
+  p 'Good luck, Human!'
+  sleep(5)
+end
+
+def get_x(human, machine)
+  '❌' if human == :x || machine == :x
+end
+
+def get_o(human, machine)
+  '🔵' if human == :o || machine == :o
+end
+
+def next_move(human, machine, move)
+  if move.odd?
+    get_x(human, machine)
+  else
+    get_o(human, machine)
   end
 end
 
-board = Board.new
-print board.show
-=begin
-  def tie?(player)
-    #is tie when all the spaces are fill, and no one is won
-    true
-  end
+# Refactor to a new class Game,
+def play(board, moves, version)
+  show_welcome version
+  human, machine = select_player
+  select_rules human
 
-  def win?(player)
-    #win when the same choice is repeated 3 times in a row , column or diagonal
-    false
-  end
-
-  def game_over?(player)
-    state = tie?(player) || win?(player)
-    state
+  until game_over? moves
+    show board
+    position = gets.chomp.to_i
+    moves += 1
+    board[position - 1] = next_move(human, machine, moves)
+    clear
   end
 end
 
-class Player
-  # choice = { x , O } the user selection
-  # position = index between 1 to 9
-  attr_accessor :choice, :position
-
-  def initialize
-    @choice = 'x'
-    @position = 1
-  end
-
-  def welcome
-    puts 'Welcome To Tic-Tac-Toe! Please select Player: X or O?'
-    @choice = gets.chomp
-    puts "Awesome! #{@choice}"
-    puts 'Rules: Select a number between 1-9 like:'
-    puts '1️⃣ 2️⃣ 3️⃣'
-    puts '4️⃣ 5️⃣ 6️⃣'
-    puts '7️⃣ 8️⃣ 9️⃣'
-    puts 'Make sure the space is available, if taken select another #'
-    puts 'You will win if you have your symbol appear on / \ | ----'
-    puts 'Good Luck and Have Fun!'
-  end
-
-  def validate?(move)
-    # this method validates the input from user
-    # ensures that input is a # form 1-9
-    move = move.to_i
-    if move.between?(1, 9)
-      true
-    else
-      false
-    end
-  end
-
-  def to_emoji(move)
-    if move == 'X'
-      move = '❌'
-    elsif move == 'O'
-      move = '🔵'
-    end
-    move
-  end
-
-  def play_game(position, move, board)
-    ###fill the board according to the rules
-    ##if valid position show board with the changes.
-    ##if board.turns.odd?
-    p board.board[position - 1] = convert_to_emoji(move)
-    board.turn += 1
-    #board[position] = convert_to_emoji(move)
-    ##else
-    # move O
-  end
-
-  def solicit(board)
-    # this method will request the user to insert the move
-    puts 'Please select a valid number between 1-9'
-    @position = gets.chomp.to_i
-    if validate? @position
-      puts 'Valid user move. Inserting into board.'
-      play_game(@position, @choice, board)
-    else
-      puts "Error. #{@position} is not a valid move.
-      Please insert a valid number between 1-9"
-    end
-  end
-end
-
-
-p player.welcome
-
-class Game
-  board = Board.new
-  player = Player.new
-  
-  def start
-    loop do
-      p board.show
-      p player.solicit(board)
-      if board.tur
-    end    
-  end
-end
-
-
-=begin
-
-def solicit_move(user_move)
-  # this method will request the user to insert the move
-  # it also validates that it is a valid move (follows rules)
-  user_moves = user_move
-  puts 'Please select a valid number between 1-9'
-  puts 'Error. #{user_move} is not a valid move.
-    Please insert a valid number between 1-9'
-end
-
-def move
-  # this method will get the user's VALID move & store it in the cell
-  user_move = gets.chomp
-  # put the move inside the grid position they've chosen.
-  # Here we interact tiwh the Board class.
-end
-
-def clear_board
-  # anytime the user inserts a new move the old board will be cleared
-  # from the Console
-end
-
-def game_status(*)
-  # This method EVALUATES the status of the board. Win? Tie? Continue?
-  # If the winning conditions are met then it'll return true
-  # if the tie conditions are met then it'll return true for tie false for win
-  # if neither of the previous conditions are met then return Continue Game
-  @game_stat = game_stat
-  game_stat
-end
-
-def game_over(*)
-  # this method carries over the result of the evaluation made in game status
-  # It will also print the result of the game status to the player
-  @game_over_is = arg
-  if win? game_over_is(arg)
-    print "HURRAY!! You've WON WON WON!"
-  elsif tie? game_over_is(arg)
-    print 'Sorry Suckers! No one won! muahaha!'
-  else continue game
-  end
-end
-=end
+play(board, moves, version)
