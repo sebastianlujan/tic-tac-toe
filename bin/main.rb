@@ -14,8 +14,8 @@ moves = 0
 # game version
 version = 1.0
 
-# game marks
-mark = { x: '❌', o: '🔵' }
+# game emoji_codess
+emoji_codes = { box: 0x20e3, emoji_style: 0xfe0f, x: 0x274c, o: 0x1f535 }
 
 # HACK: for solving the MS.console issue:
 # probably the best safe scenario is said
@@ -34,50 +34,7 @@ def game_over?(moves)
   false || tie?(moves)
 end
 
-def grid_setup(board, index, mark)
-  divisor = '——-—--'
-  plus = '+'
-  space = '     '
-  item = " #{board[index]}  "
-
-  if emoji_friendly?
-    divisor = divisor[1..-2].to_s
-    space = space[1..-2].to_s
-    item = board[index] == to_emoji(mark)
-    item += ''
-  end
-
-  row = "\n#{divisor}#{plus}#{divisor}#{plus}#{divisor}\n"
-  [space, row, item]
-end
-
-# TODO: use scapes instead of spaces, needs refactor
-def show_grid(board, index, str, mark)
-  space, row, item = grid_setup(board, index, mark)
-  str += board[index].nil? ? space : item
-  str += '|' unless [2, 5, 8].include? index
-  str += row if [2, 5].include? index
-  str
-end
-
-def show(board, mark)
-  str = "\n"
-  board.each_with_index do |_, i|
-    str = show_grid(board, i, str, mark)
-  end
-  str += "\n\n"
-  print str
-end
-
-def clear
-  `clear`
-end
-
 # TODO: create a gem: iremoji.gem
-# Explanation of a compose variants: ie: [9]
-# ordinal: " \u{0039}"
-# emoji: \u{fe0f}"
-# box: \u{20e3} "
 
 # the compose variants are a supperset of the old standard
 # https://www.unicode.org/charts/PDF/U1F600.pdf
@@ -91,30 +48,88 @@ end
 # Simple encoding for emojis without variations  is Variations = 0
 # Emoji variation sequences that contains VS16 (U+FE0F),represent :colors
 # Emoji variation sequences that contains VS15 (U+FE0E),represent monocrome !:colors
-def to_emoji(emoji_code, base, variant = nil)
-  emoji = [base, emoji_code[:box], emoji_code[:emoji_style]]
+
+#emoji_codes = { box: 0x20e3, emoji_style: 0xfe0f, x: 0x247c, o: 0x1f535 }
+
+=begin
+def to_emoji(emoji_codes, base, variant = nil)
+  emoji = [base, emoji_codes[:box], emoji_codes[:emoji_style]]
   emoji[:emoji_style] -= 1 unless variant == :colors
 
   utf8 = variant == variant.nil? ? 'U' : 'U*'
   emoji.pack(utf8)
 end
+=end
+
+# Explanation of a compose variants: ie: [9]
+# ordinal: " \u{0039} -> base"
+# emoji: \u{fe0f} -> emoji_variant"
+# box: \u{20e3} ->variant"
+
+def to_emoji(base, emoji_variant = nil, variant = nil)
+  p base.class
+  p emoji_variant.class
+  p variant.class
+  return [base].pack('U') unless base.nil?
+  # return [base, emoji_variant, variant].pack('U*') unless base.nil? && emoji_variant.nil? && variant.nil?
+end
+
+def grid_setup(board, index, codes, variant = nil)
+  divisor = '——-—'
+  plus = '+'
+  space = '    '
+  base = board[index]
+  item = " #{base}  "
+
+  if emoji_friendly?
+    divisor = divisor[1..-1].to_s + '-'
+    space = space[1..-1].to_s + ' '
+    #item = " #{to_emoji(base, codes[:box], codes[:emoji_style])} " if variant.nil"
+    item = " #{to_emoji(base, codes[:box], codes[:emoji_style])} " if variant.nil?
+  end
+
+  row = "\n#{divisor}#{plus}#{divisor}#{plus}#{divisor}\n"
+  [space, row, item]
+end
+
+# TODO: use scapes instead of spaces, needs refactor
+def show_grid(board, index, str, codes, variant = nil)
+  space, row, item = grid_setup(board, index, codes, variant)
+  str += board[index].nil? ? space : item
+  str += '|' unless [2, 5, 8].include? index
+  str += row if [2, 5].include? index
+  str
+end
+
+def show(board, code, variant = nil)
+  str = "\n"
+  board.each_with_index do |_, i|
+    str = show_grid(board, i, str, code, variant)
+  end
+  str += "\n\n"
+  print str
+end
+
+def clear
+  `clear`
+end
 
 # TODO: needs a refactor
-def show_example_position(mark)
-  glyphs = { box: 0x20e3, emoji_style: 0xfe0f }
+def show_example_position(codes)
   number_list = ('1'.ord..'9'.ord).to_a
 
   emoji_list = []
-  emoji_list = number_list.map(&:chr) unless emoji_friendly?
+  variant = codes[:emoji_style]
+
   number_list.each do |base|
-    emoji_list << to_emoji(glyphs, base, :colors) if emoji_friendly?
+    emoji_list << to_emoji(base, codes[:box], variant) if emoji_friendly?
   end
-  show(emoji_list, mark)
+  show(emoji_list, codes, variant)
 end
 
-def show_rules(mark)
+def show_rules(emoji_codes)
   enter = "\n\n"
-  show_example_position mark
+  #show_example_position emoji_codes
   p "if it's been chosen, select another position"
   print "you'll know you've won if your choice appears as: #{enter}"
 
@@ -139,27 +154,28 @@ def select_player
   [human, machine]
 end
 
-def select_rules(human, mark)
+def select_rules(human, emoji_codes)
   print "Awesome! #{human}\n Do you know the rules? [Y / N]: "
   choice = gets.chomp.downcase.to_sym
-  show_rules(mark) if choice == :n
+  show_rules(emoji_codes) if choice == :n
   print "\n Good luck, Human!\n"
-  sleep(5)
+  # sleep(5)
 end
 
-def get_x(human, machine, mark)
-  (human == :x || machine == :x) && emoji_friendly? ? mark[:x] : 'x'
+def get_x(human, machine, emoji_codes)
+  (human == :x || machine == :x) && emoji_friendly? ? emoji_codes[:x] : 'x'
 end
 
-def get_o(human, machine, mark)
-  (human == :o || machine == :o) && emoji_friendly? ? mark[:o] : 'o'
+def get_o(human, machine, emoji_codes)
+  (human == :o || machine == :o) && emoji_friendly? ? emoji_codes[:o] : 'o'
 end
 
-def next_move(human, machine, move, mark)
+# return the hexadecimal representation of my next move
+def next_move(human, machine, move, emoji_codes)
   if move.odd?
-    get_x(human, machine, mark)
+    get_x(human, machine, emoji_codes)
   else
-    get_o(human, machine, mark)
+    get_o(human, machine, emoji_codes)
   end
 end
 
@@ -168,22 +184,23 @@ def valid?(position, board)
 end
 
 # Refactor to a new class Game,
-def play(board, moves, version, mark)
+def play(board, moves, version, emoji_codes)
   show_welcome version
   human, machine = select_player
 
-  select_rules(human, mark)
+  select_rules(human, emoji_codes)
   until game_over? moves
     p 'Select a number between 1 - 9:'
     position = gets.chomp.to_i
     if valid?(position, board)
       moves += 1
-      move = next_move(human, machine, moves, mark)
+      move = next_move(human, machine, moves, emoji_codes)
+
       board[position - 1] = move
     end
-    show(board, mark)
+    show(board, emoji_codes)
     clear
   end
 end
 
-play(board, moves, version, mark)
+play(board, moves, version, emoji_codes)
