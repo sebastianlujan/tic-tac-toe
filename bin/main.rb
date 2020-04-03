@@ -49,29 +49,19 @@ end
 # Emoji variation sequences that contains VS16 (U+FE0F),represent :colors
 # Emoji variation sequences that contains VS15 (U+FE0E),represent monocrome !:colors
 
-#emoji_codes = { box: 0x20e3, emoji_style: 0xfe0f, x: 0x247c, o: 0x1f535 }
-
-=begin
-def to_emoji(emoji_codes, base, variant = nil)
-  emoji = [base, emoji_codes[:box], emoji_codes[:emoji_style]]
-  emoji[:emoji_style] -= 1 unless variant == :colors
-
-  utf8 = variant == variant.nil? ? 'U' : 'U*'
-  emoji.pack(utf8)
-end
-=end
+# emoji_codes = { box: 0x20e3, emoji_style: 0xfe0f, x: 0x247c, o: 0x1f535 }
 
 # Explanation of a compose variants: ie: [9]
 # ordinal: " \u{0039} -> base"
 # emoji: \u{fe0f} -> emoji_variant"
-# box: \u{20e3} ->variant"
+# box: \u{20e3} -> variant"
 
-def to_emoji(base, emoji_variant = nil, variant = nil)
-  p base.class
-  p emoji_variant.class
-  p variant.class
-  return [base].pack('U') unless base.nil?
-  # return [base, emoji_variant, variant].pack('U*') unless base.nil? && emoji_variant.nil? && variant.nil?
+def to_emoji(*args)
+  if args.size == 1
+    [args[0].to_i].pack('U')
+  else
+    [args[0].to_i, args[1].to_i, args[2].to_i].pack('U*') unless args[0].nil?
+  end
 end
 
 def grid_setup(board, index, codes, variant = nil)
@@ -84,8 +74,14 @@ def grid_setup(board, index, codes, variant = nil)
   if emoji_friendly?
     divisor = divisor[1..-1].to_s + '-'
     space = space[1..-1].to_s + ' '
-    #item = " #{to_emoji(base, codes[:box], codes[:emoji_style])} " if variant.nil"
-    item = " #{to_emoji(base, codes[:box], codes[:emoji_style])} " if variant.nil?
+
+    unless base.nil? && base.to_i < 49 && base.to_i > 57
+      item = " #{to_emoji(base)} " if variant.nil?
+    end
+
+    if !base.nil? && base.to_i >= 49 && base.to_i <= 57
+      item = " #{to_emoji(base, codes[:emoji_style], codes[:box])} " unless variant.nil?
+    end
   end
 
   row = "\n#{divisor}#{plus}#{divisor}#{plus}#{divisor}\n"
@@ -117,19 +113,18 @@ end
 # TODO: needs a refactor
 def show_example_position(codes)
   number_list = ('1'.ord..'9'.ord).to_a
-
   emoji_list = []
-  variant = codes[:emoji_style]
 
   number_list.each do |base|
-    emoji_list << to_emoji(base, codes[:box], variant) if emoji_friendly?
+    emoji_list << to_emoji(base, codes[:emoji_style], codes[:box]) if emoji_friendly?
   end
-  show(emoji_list, codes, variant)
+
+  show(emoji_list, codes, codes[:emoji_style])
 end
 
 def show_rules(emoji_codes)
   enter = "\n\n"
-  #show_example_position emoji_codes
+  show_example_position emoji_codes
   p "if it's been chosen, select another position"
   print "you'll know you've won if your choice appears as: #{enter}"
 
