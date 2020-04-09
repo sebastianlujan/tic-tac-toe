@@ -64,6 +64,14 @@ def to_emoji(*args)
   end
 end
 
+def check_simple_emoji(base, variant)
+  item = ''
+  unless base.nil? && base.to_i < 49 && base.to_i > 57
+    item = " #{to_emoji(base)} " if variant.nil?
+  end
+  item
+end
+
 def grid_setup(board, index, codes, variant = nil)
   divisor = '——-—'
   plus = '+'
@@ -75,9 +83,7 @@ def grid_setup(board, index, codes, variant = nil)
     divisor = divisor[1..-1].to_s + '-'
     space = space[1..-1].to_s + ' '
 
-    unless base.nil? && base.to_i < 49 && base.to_i > 57
-      item = " #{to_emoji(base)} " if variant.nil?
-    end
+    item = check_simple_emoji(base, variant)
 
     if !base.nil? && base.to_i >= 49 && base.to_i <= 57
       item = " #{to_emoji(base, codes[:emoji_style], codes[:box])} " unless variant.nil?
