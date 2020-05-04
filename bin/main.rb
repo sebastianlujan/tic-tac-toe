@@ -18,8 +18,8 @@ class Main
 
   # HACK: for solving the MS.console issue:
   # probably the best safe scenario is said
-  # only mac is emoji friendly, but is a falacy
-  def friendly?
+  # only mac is emoji emoji_friendly, but is a falacy
+  def emoji_friendly?
     OS.linux? || OS.mac?
   end
 
@@ -34,18 +34,18 @@ class Main
     false || tie?(moves)
   end
 
-  def grid_setup(board, index, emoji, variant = nil)
+  def grid_setup(cell, index, emoji, variant = nil)
     divisor = '——-—'
     plus = '+'
     space = '    '
-    base = board.cell[index]
+    base = cell[index]
     item = " #{base}  "
 
-    if emoji.friendly?
+    if emoji_friendly?
       divisor = divisor[1..-1].to_s + '-'
       space = space[1..-1].to_s + ' '
 
-      item = check_simple_emoji(base, variant, item)
+      item = emoji.check_simple_emoji(base, variant, item)
     end
 
     row = "\n#{divisor}#{plus}#{divisor}#{plus}#{divisor}\n"
@@ -53,21 +53,19 @@ class Main
   end
 
   # TODO: use scapes instead of spaces, needs refactor
-  def show_grid(board, index, str, emoji, variant = nil)
-    space, row, item = grid_setup(board, index, emoji, variant)
-    board = board.cell
-    str += board[index].nil? ? space : item
+  def show_grid(cell, index, str, emoji, variant = nil)
+    space, row, item = grid_setup(cell, index, emoji, variant)
+    str += cell[index].nil? ? space : item
     str += '|' unless [2, 5, 8].include? index
     str += row if [2, 5].include? index
     str
   end
 
-  def show(board, emoji, variant = nil)
+  def show(cell, emoji, variant = nil)
     str = "\n"
-    binding.pry
-    cell = @board.cell
+
     cell.each_with_index do |_, i|
-      str = show_grid(board, i, str, emoji, variant)
+      str = show_grid(cell, i, str, emoji, variant)
     end
     str += "\n\n"
     print str
@@ -85,7 +83,7 @@ class Main
 
     number_list.each do |base|
 
-      emoji_list << emoji.to_emoji(base, emoji.codes[:emoji_style], emoji.codes[:box]) if emoji.friendly?
+      emoji_list << emoji.to_emoji(base, emoji.codes[:emoji_style], emoji.codes[:box]) if emoji_friendly?
     end
 
     show(emoji_list, emoji, emoji.codes[:emoji_style])
@@ -97,7 +95,7 @@ class Main
     p "if it's been chosen, select another position"
     print "you'll know you've won if your choice appears as: #{enter}"
 
-    if emoji.friendly?
+    if emoji_friendly?
       print "\t➡️#{' ' * 4}⬇️#{' ' * 4}↘️#{' ' * 4}↗️ #{enter}"
       print "three times in a row, e.i : #{enter}\t🔵 | 🔵 | 🔵 #{enter}"
     else
@@ -128,20 +126,20 @@ class Main
     # sleep(5)
   end
 
-  def get_x(human, machine, emoji, board)
-    (human == :x || machine == :x) && board.friendly? ? emoji.codes[:x] : 'x'
+  def get_x(human, machine, emoji)
+    (human == :x || machine == :x) && emoji_friendly? ? emoji[:x] : 'x'
   end
 
   def get_o(human, machine, emoji)
-    (human == :o || machine == :o) && board.friendly? ? emoji.codes[:o] : 'o'
+    (human == :o || machine == :o) && emoji_friendly? ? emoji[:o] : 'o'
   end
 
   # return the hexadecimal representation of my next move
   def next_move(human, machine, board, emoji)
     if board.moves.odd?
-      get_x(human, machine, board, emoji.codes)
+      get_x(human, machine, emoji.codes)
     else
-      get_o(human, machine, board, emoji.codes)
+      get_o(human, machine, emoji.codes)
     end
   end
 
@@ -166,7 +164,7 @@ class Main
 
         board.cell[position - 1] = move
       end
-      show(board, emoji)
+      show(board.cell, emoji)
       clear
     end
   end
