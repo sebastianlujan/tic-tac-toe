@@ -1,0 +1,1 @@
+class Emoji_unicode
