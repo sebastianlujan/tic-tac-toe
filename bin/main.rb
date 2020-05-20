@@ -8,6 +8,66 @@ require 'pry'
 require '../lib/Board.rb'
 require '../lib/Emoji.rb'
 
+class Check
+  @emoji = Emoji.new
+  @x = @emoji.to_emoji(@emoji.codes[:x])
+  @o = @emoji.to_emoji(@emoji.codes[:o])
+
+  def tie?(moves)
+    moves == 9
+  end
+
+  def game_over?(board)
+    moves = board.moves
+    winner?(board) || tie?(moves)
+  end
+
+  def winner?(board)
+    diagonal?(board.cell) || horizontal?(board.cell) || vertical?(board.cell)
+  end
+
+  private
+
+  def diagonal?(board)
+    return true if [board[0], board[4], board[8]].all?{ |i| i == @o || i == @x }
+    return true if [board[2], board[4], board[6]].all?{ |i| i == @o || i == @x }
+
+    false
+  end
+
+  def horizontal?(board)
+    index = 0
+    3.times do
+      index = 0
+      return true if board[index..index + 2].all?{ |i| i == @o || i == @x }
+
+      index += 3
+    end
+    false
+  end
+
+  def vertical?(board)
+    index = 0
+    3.times do
+      board_list = [board[index], board[index + 3], board[index + 6]]
+      return true if board_list.all?{ |i| i == @o || i == @x }
+
+      index += 1
+    end
+    false
+  end
+end
+
+class Display
+  def clear
+    `clear`
+  end
+
+  def welcome(version)
+    puts "Welcome To Tic-Tac-Toe! v#{version} m2 By Ara and Seba"
+  end
+end
+
 class Main
   # testing code
   attr_accessor :version
@@ -21,17 +81,6 @@ class Main
   # only mac is emoji emoji_friendly, but is a falacy
   def emoji_friendly?
     OS.linux? || OS.mac?
-  end
-
-  def tie?(moves)
-    moves == 9
-  end
-
-  # refactor to board.game_over?
-  def game_over?(board)
-    # is game over if tie? || winner?(human) || winner?(machine)
-    moves = board.moves
-    false || tie?(moves)
   end
 
   def grid_setup(cell, index, emoji, variant = nil)
@@ -71,22 +120,20 @@ class Main
     print str
   end
 
-  def clear
-    `clear`
-  end
-
   # TODO: needs a refactor
   def show_example_position(emoji)
     # binding.pry
     number_list = ('1'.ord..'9'.ord).to_a
     emoji_list = []
+    style = emoji.codes[:style]
+    box = emoji.codes[:box]
 
     number_list.each do |base|
-
-      emoji_list << emoji.to_emoji(base, emoji.codes[:emoji_style], emoji.codes[:box]) if emoji_friendly?
+      if emoji_friendly?
+        emoji_list << emoji.to_emoji(base, style, box)
+      end
     end
-
-    show(emoji_list, emoji, emoji.codes[:emoji_style])
+    show(emoji_list, emoji, emoji.codes[:style])
   end
 
   def show_rules(emoji)
@@ -102,10 +149,6 @@ class Main
       print "\n< row >#{' ' * 4}< column >#{' ' * 4}< diagonals >#{' ' * 4}#{enter}"
       print "three times in a row, e.i : #{enter}\t  o  |  o  |  o  #{enter}"
     end
-  end
-
-  def show_welcome(version)
-    puts "Welcome To Tic-Tac-Toe! v#{version} m2 By Ara and Seba"
   end
 
   def select_player
@@ -126,6 +169,7 @@ class Main
     # sleep(5)
   end
 
+  # needs refactor
   def get_x(human, machine, emoji)
     (human == :x || machine == :x) && emoji_friendly? ? emoji[:x] : 'x'
   end
@@ -147,14 +191,13 @@ class Main
     board.cell[position - 1].nil? && position.between?(1, 9)
   end
 
-  # Refactor to a new class Game,
-  def play(board, version, emoji)
-    show_welcome version
+  def play(board, check, version, emoji, display)
+    display.welcome version
     human, machine = select_player
 
     select_rules(human, emoji)
 
-    until game_over? board
+    until check.game_over? board
       p 'Select a number between 1 - 9:'
       position = gets.chomp.to_i
 
@@ -165,15 +208,17 @@ class Main
         board.cell[position - 1] = move
       end
       show(board.cell, emoji)
-      clear
+      display.clear
     end
   end
 end
 
 game = Main.new
+display = Display.new
 board = Board.new
 emoji = Emoji.new
+check = Check.new
 version = game.version
 
 # binding.pry
-game.play(board, version, emoji)
+game.play(board, check, version, emoji, display)
